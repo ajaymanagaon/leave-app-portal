@@ -1,1 +1,0 @@
-Does not support in sqlite:
