@@ -15,7 +15,7 @@ from flask import Response
 from flask import session,g
 from logging.handlers import RotatingFileHandler
 import random
-
+import xlsxwriter
 
 
 app = Flask(__name__)
@@ -537,6 +537,207 @@ def saveattendance(attendanceDay):
                 sb.insert_into_leave_details_table_yesterday(attendanceDetails=attendanceDetails, leavetype= leaveId)
         sb.c.close()
         return "Ok"
+
+
+@app.route('/downloadattendancereport', methods=['GET'])
+def downloadattendancereport():
+    path = "C:\\Attendance"
+    try:      
+        for filename in os.listdir(path):
+            file_path = os.path.join(path, filename)            
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.remove(file_path)                
+    except Exception as e:
+        return 'The file might be open hence failed to delete a file, Please close the file and try!'
+    try:
+        sb = EmployeeProfileDAL()
+        #Get the count of all employees for Half Day and Full Day
+        attendanceCount = sb.get_count_of_all_attendance_employees()
+        attendanceCountHalfDay = sb.get_count_of_all_attendance_employees_halfDay()
+        attendanceCountYesterday = sb.get_count_of_all_attendance_employees_yesterday()
+        attendanceCountHalfDayYesterday = sb.get_count_of_all_attendance_employees_yesterday_halfday()
+
+        atOfficeCountTotalToday = attendanceCount['AtOfficeCount'] + attendanceCountHalfDay['AtOfficeCountHalfday']
+        sickLeaveTotalCountToday = attendanceCount['SickLeaveCount'] + attendanceCountHalfDay['SickLeaveCountHalfDay']
+        casualLeaveTotalCountToday = attendanceCount['CasualLeaveCount'] + attendanceCountHalfDay['CasualLeaveCountHalfDay']
+        wfhLeaveTotalCountToday = attendanceCount['WorkFromHomeCount'] + attendanceCountHalfDay['WorkFromHomeCountHalfDay']
+
+        atOfficeCountTotalYesterday = attendanceCountYesterday['AtOfficeCount'] + attendanceCountHalfDayYesterday['AtOfficeCountHalfDay']
+        wfhCountTotalYesterday = attendanceCountYesterday['WorkFromHomeCount'] + attendanceCountHalfDayYesterday['WorkFromHomeCountHalfDay']
+        casualLeaveCountTotalYesterday = attendanceCountYesterday['CasualLeaveCount'] + attendanceCountHalfDayYesterday['CasualLeaveCountHalfDay']
+        sickLeaveCountTotalYesterday = attendanceCountYesterday['SickLeaveCount'] + attendanceCountHalfDayYesterday['SickLeaveCountHalfDay']
+        
+        #Get Employee Names for all half Day and Full day
+        attendanceEmployees = sb.get_all_attendance_employees()        
+        attendanceEmployeesYesterday = sb.get_all_attendance_employees_yesterday()     
+        attendanceEmployeesHalfDay = sb.get_all_attendance_employees_halfday()        
+        attendanceEmployeesHalfDayYesterday = sb.get_all_attendance_employees_yesterday_halfday() 
+
+        if attendanceEmployeesHalfDay["AtOfficeEmployeesHalfDay"] != 'None' and attendanceEmployees['AtOfficeEmployees'] != 'None':
+            atofficeEmployeesToday = attendanceEmployeesHalfDay["AtOfficeEmployeesHalfDay"] + attendanceEmployees['AtOfficeEmployees']
+        if attendanceEmployeesHalfDay["SickLeaveEmployeesHalfDay"] != 'None' and attendanceEmployees['SickLeaveEmployees'] != 'None':
+            sickLeaveEmployeesToday = attendanceEmployeesHalfDay["SickLeaveEmployeesHalfDay"] + attendanceEmployees['SickLeaveEmployees']
+        if attendanceEmployeesHalfDay["CasualLeaveEmployeesHalfDay"] != 'None' and attendanceEmployees['CasualLeaveEmployees'] != 'None':
+            casualLeaveEmployeesToday = attendanceEmployeesHalfDay["CasualLeaveEmployeesHalfDay"] + attendanceEmployees['CasualLeaveEmployees']
+
+        if attendanceEmployeesHalfDay["AtOfficeEmployeesHalfDay"] == 'None' and attendanceEmployees['AtOfficeEmployees'] != 'None':
+            atofficeEmployeesToday = attendanceEmployees['AtOfficeEmployees']
+        if attendanceEmployeesHalfDay["SickLeaveEmployeesHalfDay"] == 'None' and attendanceEmployees['SickLeaveEmployees'] != 'None':
+            sickLeaveEmployeesToday = attendanceEmployees['SickLeaveEmployees']
+        if attendanceEmployeesHalfDay["CasualLeaveEmployeesHalfDay"] == 'None' and attendanceEmployees['CasualLeaveEmployees'] != 'None':
+            casualLeaveEmployeesToday = attendanceEmployees['CasualLeaveEmployees']
+
+        if attendanceEmployeesHalfDay["AtOfficeEmployeesHalfDay"] != 'None' and attendanceEmployees['AtOfficeEmployees'] == 'None':
+            atofficeEmployeesToday = attendanceEmployeesHalfDay["AtOfficeEmployeesHalfDay"]
+        if attendanceEmployeesHalfDay["SickLeaveEmployeesHalfDay"] != 'None' and attendanceEmployees['SickLeaveEmployees'] == 'None':
+            sickLeaveEmployeesToday = attendanceEmployeesHalfDay["SickLeaveEmployeesHalfDay"]
+        if attendanceEmployeesHalfDay["CasualLeaveEmployeesHalfDay"] != 'None' and attendanceEmployees['CasualLeaveEmployees'] == 'None':
+            casualLeaveEmployeesToday = attendanceEmployeesHalfDay["CasualLeaveEmployeesHalfDay"]
+
+        print(f'attendanceEmployeesHalfDayYesterday :{attendanceEmployeesHalfDayYesterday}')
+
+        if attendanceEmployeesHalfDayYesterday['AtOfficeEmployeeshalfday'] != 'None' and attendanceEmployeesYesterday['AtOfficeEmployees'] != 'None':
+            atOfficeEmployeesYesterday = attendanceEmployeesHalfDayYesterday['AtOfficeEmployeeshalfday'] + attendanceEmployeesYesterday['AtOfficeEmployees']
+        if attendanceEmployeesHalfDayYesterday['SickLeaveEmployeeshalfday'] != 'None'  and attendanceEmployeesYesterday['SickLeaveEmployees'] != 'None':
+            sickLeaveEmployeesYesterday = attendanceEmployeesHalfDayYesterday['SickLeaveEmployeeshalfday'] + attendanceEmployeesYesterday['SickLeaveEmployees']
+        if attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] != 'None' and attendanceEmployeesYesterday['CasualLeaveEmployees'] != 'None':
+            casualLeaveEmployeesYesterday = attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] + attendanceEmployeesYesterday['CasualLeaveEmployees']
+
+        if attendanceEmployeesHalfDayYesterday['AtOfficeEmployeeshalfday'] != 'None' and attendanceEmployeesYesterday['AtOfficeEmployees'] == 'None':
+            atOfficeEmployeesYesterday = attendanceEmployeesHalfDayYesterday['AtOfficeEmployeeshalfday']
+        if attendanceEmployeesHalfDayYesterday['SickLeaveEmployeeshalfday'] != 'None'  and attendanceEmployeesYesterday['SickLeaveEmployees'] == 'None':
+            sickLeaveEmployeesYesterday = attendanceEmployeesHalfDayYesterday['SickLeaveEmployeeshalfday']
+        if attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] != 'None' and attendanceEmployeesYesterday['CasualLeaveEmployees'] == 'None':
+            casualLeaveEmployeesYesterday = attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday']
+
+        if attendanceEmployeesHalfDayYesterday['AtOfficeEmployeeshalfday'] == 'None' and attendanceEmployeesYesterday['AtOfficeEmployees'] != 'None':
+            atOfficeEmployeesYesterday = attendanceEmployeesYesterday['AtOfficeEmployees']
+        if attendanceEmployeesHalfDayYesterday['SickLeaveEmployeeshalfday'] == 'None'  and attendanceEmployeesYesterday['SickLeaveEmployees'] != 'None':
+            sickLeaveEmployeesYesterday = attendanceEmployeesYesterday['SickLeaveEmployees']
+        if attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] == 'None' and attendanceEmployeesYesterday['CasualLeaveEmployees'] != 'None':
+            casualLeaveEmployeesYesterday = attendanceEmployeesYesterday['CasualLeaveEmployees']
+
+        isExist = os.path.exists(path)
+        if not isExist:
+            os.makedirs(path)
+            
+        todaysdate = datetime.now().strftime('%d-%m-%Y')
+        workbook = xlsxwriter.Workbook(f'C:\\Attendance\\Attendance_{todaysdate}.xlsx')
+        worksheet = workbook.add_worksheet(todaysdate)
+        #Excel Formatting
+        bold = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter','border':2, 'border_color':'black'})
+        bold_border_background_colour = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter', 'border':2, 'border_color':'black','bg_color': 'yellow'})
+        text_wrap = workbook.add_format({'align': 'center', 'valign': 'vcenter', 'text_wrap': True, 'border':2, 'border_color':'black'})
+        center = workbook.add_format({'align': 'center', 'valign': 'vcenter','border':2, 'border_color':'black'})
+
+        #Setting Column Width
+        worksheet.set_column("B:B",10)
+        worksheet.set_column("C:C",5)
+        worksheet.set_column("D:D",50)
+        worksheet.set_column("E:E",15)
+        worksheet.set_column("F:F",15)
+        worksheet.set_column("G:G",15)
+        worksheet.set_column("H:H",20)
+
+        #Adding Data to 3rd Row
+        worksheet.write('B3', 'Date', bold_border_background_colour)
+        worksheet.write('C3', 'Total', bold_border_background_colour)
+        worksheet.write('D3', 'At Office', bold_border_background_colour)
+        worksheet.write('E3', 'Work From Home', bold_border_background_colour)
+        worksheet.write('F3', 'At Customer Site', bold_border_background_colour)
+        worksheet.write('G3', 'On Leave Not Sick', bold_border_background_colour)
+        worksheet.write('H3', 'Sick', bold_border_background_colour)
+
+        #adding data for yesterday
+        worksheet.write('B9', 'Date', bold_border_background_colour)
+        worksheet.write('C9', 'Total', bold_border_background_colour)
+        worksheet.write('D9', 'At Office', bold_border_background_colour)
+        worksheet.write('E9', 'Work From Home', bold_border_background_colour)
+        worksheet.write('F9', 'At Customer Site', bold_border_background_colour)
+        worksheet.write('G9', 'On Leave Not Sick', bold_border_background_colour)
+        worksheet.write('H9', 'Sick', bold_border_background_colour)
+        
+        
+        #Adding Data to 4th Row
+        worksheet.write('B4', "", center)
+        worksheet.write('C4',attendanceCount['TotalEmployeeCount'] ,center)
+        worksheet.write('D4', atOfficeCountTotalToday ,center)
+        worksheet.write("E4",wfhLeaveTotalCountToday,center)
+        worksheet.write('F4', "", center)
+        worksheet.write('G4',casualLeaveTotalCountToday,center)
+        worksheet.write('H4',sickLeaveTotalCountToday,center)
+
+        worksheet.write('B10', "", center)
+        worksheet.write('C10',attendanceCountYesterday['TotalEmployeeCount'] ,center)
+        worksheet.write('D10',atOfficeCountTotalYesterday ,center)
+        worksheet.write("E10",wfhCountTotalYesterday ,center)
+        worksheet.write('F10', "", center)
+        worksheet.write('G10',casualLeaveCountTotalYesterday ,center)
+        worksheet.write('H10',sickLeaveCountTotalYesterday ,center)
+        
+        #Adding data to 5th row
+        worksheet.write('B5', todaysdate , bold)
+        worksheet.write('C5', "", center)
+        if attendanceEmployees['AtOfficeEmployees'] == 'None' and attendanceEmployeesHalfDay["AtOfficeEmployeesHalfDay"] == 'None':
+            worksheet.write('D5',"None",text_wrap) 
+        else :
+            worksheet.write('D5',' , '.join(atofficeEmployeesToday),text_wrap) 
+
+        worksheet.write('E5', "", center)
+        worksheet.write('F5', "", center)
+        if attendanceEmployees['CasualLeaveEmployees'] == 'None' and attendanceEmployeesHalfDay["CasualLeaveEmployeesHalfDay"] == 'None':
+            worksheet.write('G5',"None",text_wrap) 
+        else :
+            worksheet.write('G5',' , '.join(casualLeaveEmployeesToday),text_wrap) 
+            
+        if attendanceEmployees['SickLeaveEmployees'] == 'None' and attendanceEmployeesHalfDay["SickLeaveEmployeesHalfDay"] == 'None':
+            worksheet.write('H5',"None",text_wrap) 
+        else :
+            worksheet.write('H5',' , '.join(sickLeaveEmployeesToday),text_wrap) 
+            
+
+        #Adding data to 5th row
+        if date.today().weekday() == 0:
+            yesterday =  datetime.now() - timedelta(3)
+            yesterdaysDate = (datetime.strftime(yesterday, '%d/%m/%Y'))
+        else :
+            yesterday =  datetime.now() - timedelta(1)
+            yesterdaysDate = (datetime.strftime(yesterday, '%d/%m/%Y'))
+
+        worksheet.write('B11', yesterdaysDate , bold)
+        worksheet.write('C11', "", center)
+
+        if attendanceEmployeesYesterday['AtOfficeEmployees'] == 'None' and attendanceEmployeesHalfDayYesterday['AtOfficeEmployeeshalfday'] == 'None':
+            worksheet.write('D11',"None",text_wrap) 
+        else :
+            worksheet.write('D11',' , '.join(atOfficeEmployeesYesterday),text_wrap) 
+        
+        worksheet.write('E11', "", center)
+        worksheet.write('F11', "", center)
+
+        if attendanceEmployeesYesterday['CasualLeaveEmployees'] == 'None' and attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] == 'None':
+            worksheet.write('G11',"None",text_wrap) 
+        else :
+            worksheet.write('G11',' , '.join(casualLeaveEmployeesYesterday),text_wrap)
+            
+        if attendanceEmployeesYesterday['SickLeaveEmployees'] == 'None' and attendanceEmployeesHalfDayYesterday['SickLeaveEmployeeshalfday'] == 'None':
+            worksheet.write('H11',"None",text_wrap) 
+        else :
+            worksheet.write('H11',' , '.join(sickLeaveEmployeesYesterday),text_wrap) 
+           
+        #worksheet.write('E5',','.join(attendanceEmployees['WorkFromHomeEmployees']),text_wrap)
+
+        workbook.close()
+        
+        file = f'C:\\Attendance\\Attendance_{todaysdate}.xlsx'
+        return send_file(file,as_attachment= True)
+    except Exception as e:
+        print(f'Error when downloading report : {e}')
+        return "error"
+
+
+
+
 
 
 
