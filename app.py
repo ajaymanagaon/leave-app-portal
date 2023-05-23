@@ -35,7 +35,11 @@ def login():
             sb = EmployeeProfileDAL()
             rowReturn = sb.read_employee()
             projectList=get_project_list()
-            return render_template("Dashboard.html", rowTable=rowReturn, projectList=projectList)
+            admin_return= Admin()
+            if admin_return=="Yes":
+                return redirect(url_for("viewTeamfun"))
+            else:
+                return render_template("Dashboard.html", rowTable=rowReturn, projectList=projectList)
         if request.method == 'POST':
             corpid=request.form['corpId']
             corppass = request.form['corppass']
