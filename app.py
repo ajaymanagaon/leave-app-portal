@@ -98,6 +98,49 @@ def list_all_users():
     return redirect(url_for('home'))
 
 
+@app.route('/add profile', methods=['POST'])
+def add_profile():
+    if 'user' in session:
+        employee_id = request.form['employeeId']
+        employee_name = request.form['employeeName']
+        project_name = request.form['ProjectName']
+        corpid = session['user']
+        email = request.form['Mail']
+        corp_idM = request.form['CorpID']
+        department = request.form['Department']
+        employeeODCStatus="Assigned"
+        expertise=request.form['Expertise']
+        employeeLevel=request.form['EmployeeLevel']
+        sb = EmployeeProfileDAL()
+        project_id = sb.get_project_id(project_name=project_name)
+        EmployeeName = corpid
+        employee = Employee(employee_id, employee_name, project_id, project_name, corp_idM, email, department, employeeODCStatus,expertise, employeeLevel)
+        sb.add_employee(employee)
+        rowReturn = sb.read_employee()
+        sb.c.close()
+        projectList = get_project_list()
+        employeeLevelList = get_employeeLevel_list()
+        app.logger.info('%s added by: %s',employee_id, corpid)
+        AdminReturn = Admin()
+        if AdminReturn == "Yes":
+            return render_template("Dashboard.html", rowTable=rowReturn, **locals())
+        else:
+            return render_template("Dashboard.html", rowTable=rowReturn, EmployeeName=EmployeeName, employee=employee, corpid=corpid,projectList=projectList, employeeLevelList = employeeLevelList)
+    return redirect(url_for('home'))
+
+@app.route('/compare', methods=['POST'])
+def compare():
+    print("inside compare method serverside validation")
+    formElement = request.json
+    sb = EmployeeProfileDAL()
+    for keyFromDict in formElement:
+        key = keyFromDict
+    idFromDB = sb.gettingEmployeeDetailsForRepeatedEntries(formElement)
+    if idFromDB == 1:
+        msg = key + " is already exist in the system.Please try another."
+        return jsonify({'error': msg})
+    else:
+        return jsonify({'success': 'true'})
 
 
 
