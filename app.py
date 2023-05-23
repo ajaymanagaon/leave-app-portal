@@ -61,7 +61,6 @@ def login():
     except Exception as e:
         return str(e)
 
-
 @app.route('/viewteam')
 def viewTeamfun():
     if 'user' in session:
@@ -439,74 +438,9 @@ def monthlyOtherDeductions():
                                        corpid=corpid)
     return render_template('loginV4.html', **locals())
 
-#Attendance Portal API
-@app.route('/attendance', methods=['GET'])
-def attendance():
-    if 'user' in session:
-        AdminReturn = Admin()
-        if AdminReturn == "Yes":
-            return render_template("attendance.html", **locals())
-        else:
-            return render_template("attendance.html")
-    else:
-        return render_template('loginV4.html', **locals())
 
 
-@app.route('/attendanceyesterday', methods=['GET'])
-def attendanceyesterday():
-    if 'user' in session:
-        AdminReturn = Admin()
-        if AdminReturn == "Yes":
-            return render_template("attendanceyesterday.html", **locals())
-        else:
-            return render_template("attendanceyesterday.html")
-    else:
-        return render_template('loginV4.html', **locals())
 
-
-@app.route('/attendanceemployees', methods=['GET'])
-def attendanceemployees():
-    sb = EmployeeProfileDAL()
-    setAttendancetableDates()
-    attendanceEmployees = sb.attendance_employees()
-    employeeList = []
-    for employee in attendanceEmployees:
-        employeeDict = {
-            "EmployeeId" : employee[0],
-            "EmployeeName" : employee[1],
-            "ProjectName" : employee[2],
-            "AtOffice" : employee[3],
-            "SickLeave" : employee[4],
-            "CasualLeave" : employee[5],
-            "WorkFromHome" : employee[6],
-        }
-        employeeList.append(employeeDict)
-    return jsonify(employeeList)
-
-
-@app.route('/attendanceemployeesyesterday', methods=['GET'])
-def attendanceemployeesyesterday():   
-    sb = EmployeeProfileDAL()
-    attendanceEmployees = sb.attendance_employees_yesterday()
-    employeeList = []
-    for employee in attendanceEmployees:
-        employeeDict = {
-            "EmployeeId" : employee[0],
-            "EmployeeName" : employee[1],
-            "ProjectName" : employee[2],
-            "AtOffice" : employee[3],
-            "SickLeave" : employee[4],
-            "CasualLeave" : employee[5],
-            "WorkFromHome" : employee[6],
-        }
-        employeeList.append(employeeDict)
-    return jsonify(employeeList)
-
-@app.route('/projectnames', methods=['GET'])
-def projectnames():
-    if request.method =='GET':
-        sb = EmployeeProfileDAL()
-        return jsonify(sb.getProjects())
 
 
 
@@ -704,38 +638,8 @@ def gettingOtherDeductionsInfo(month, year):
             employeeStatusListView.append(employeeWorkStatus)
     return employeeStatusListView
 
-def setAttendancetableDates():
-    sb = EmployeeProfileDAL()
-    
-    datesAndCount = sb.get_datesCount_in_attendance_table()
-    CurrentDateFromAttendanceTable = datesAndCount['CurrentDateFromAttendanceTable']
-    YesterdaysDateFromTable = datesAndCount['YesterdaysDateFromTable']
-    today = datetime.now()
-    
-    if date.today().weekday() == 0:
-        yesterday =  datetime.now() - timedelta(3)
-        yesterdaysDate = (datetime.strftime(yesterday, '%d/%m/%Y'))
-    else:
-        yesterday =  datetime.now() - timedelta(1)
-        yesterdaysDate = (datetime.strftime(yesterday, '%d/%m/%Y'))
-    todaysDate = (datetime.strftime(today, '%d/%m/%Y'))    
-    
-    weekNumber = datetime.today().weekday()
-    if weekNumber < 5:
-        if YesterdaysDateFromTable != yesterdaysDate:
-            sb.updateAttendanceYesterdayTableDate(yesterdaysDate)            
-            sb.UpdatingAttendanceYesterdaysAtOfficeRecords()
-            sb.UpdatingAttendanceYesterdaysSickLeaveRecords()
-            sb.UpdatingAttendanceYesterdaysWorkFromHomeRecords()
-            sb.UpdatingAttendanceYesterdaysCasualLeaveRecords()
-        if CurrentDateFromAttendanceTable != todaysDate:
-            sb.reset_atOffice()
-            sb.reset_sickLeave()
-            sb.reset_casualLeave()
-            sb.reset_workFromHome()
-            sb.updateAttendanceTableDate(todaysDate)
-            print('Updating future leaves')
-            sb.set_future_leaves_for_today()
+
+
 
 
 
