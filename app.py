@@ -515,7 +515,28 @@ def projectnames():
         sb = EmployeeProfileDAL()
         return jsonify(sb.getProjects())
 
-
+@app.route('/saveattendance/<attendanceDay>', methods=['POST'])
+def saveattendance(attendanceDay):
+    if request.method =='POST':
+        sb = EmployeeProfileDAL()
+        employeeId = request.form['employeeId']
+        atOffice = request.form['atOffice']
+        sickLeave = request.form['sickLeave']
+        casualLeave = request.form['casualLeave']
+        workFromHome = request.form['workFromHome']
+        leaveId = getLeaveIdFromLeaveType(sickLeave=sickLeave, casualLeave=casualLeave)
+        print(f'Leave id : {leaveId}')
+        attendanceDetails = AttendanceDetails(employee_id= employeeId, at_office=atOffice,sick_leave=sickLeave,casual_leave=casualLeave,work_form_home=workFromHome)
+        if attendanceDay == 'today':
+            sb.update_employee_attendance(attendanceDetails=attendanceDetails)
+            if leaveId:                
+                sb.insert_into_leave_details_table(attendanceDetails=attendanceDetails, leavetype= leaveId)
+        if attendanceDay == 'yesterday':
+            sb.update_employee_attendance_yesterday(attendanceDetails=attendanceDetails)
+            if leaveId:
+                sb.insert_into_leave_details_table_yesterday(attendanceDetails=attendanceDetails, leavetype= leaveId)
+        sb.c.close()
+        return "Ok"
 
 
 #All Private Methods
@@ -745,6 +766,17 @@ def setAttendancetableDates():
             sb.set_future_leaves_for_today()
 
 
+def getLeaveIdFromLeaveType(sickLeave, casualLeave):
+    leaveId = None
+    if sickLeave == 'Full Day':
+        leaveId = 1
+    if sickLeave == 'Half Day':
+        leaveId = 2
+    if casualLeave == 'Full Day':
+        leaveId = 4
+    if casualLeave == 'Half Day':
+        leaveId = 5
+    return leaveId
 
 
 
