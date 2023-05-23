@@ -549,7 +549,7 @@ def downloadattendancereport():
             if os.path.isfile(file_path) or os.path.islink(file_path):
                 os.remove(file_path)                
     except Exception as e:
-        return str(path)
+        return str(e)
     try:
         sb = EmployeeProfileDAL()
         #Get the count of all employees for Half Day and Full Day
