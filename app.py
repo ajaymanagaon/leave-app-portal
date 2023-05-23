@@ -143,6 +143,36 @@ def compare():
         return jsonify({'success': 'true'})
 
 
+@app.route('/Update profile/0', methods=['POST'])
+def update_profile():
+    if 'user' in session:
+        sb = EmployeeProfileDAL()
+        corpid = session['user']
+        EmployeeName = corpid
+        employee_id = request.form['employeeId']
+        employee_name = request.form['employeeName']
+        project_name = request.form['projectNameUpdate']
+        corpIdM = request.form['corpIdUpdate']
+        email = request.form['emailIdUpdate']
+        employeeODCStatus= 'Assigned'
+        department = request.form['DepartmentUpdate']
+        expertise = request.form['expertiseUpdateName']
+        employeeLevelUpdate = request.form['employeeLevelUpdate']
+        project_id = sb.get_project_id(project_name=project_name)
+        employee = Employee(employee_id, employee_name, project_id, project_name, corpIdM, email, department, employeeODCStatus,expertise, employeeLevelUpdate)
+        sb.update_employee(employee)
+        rowReturn = sb.read_employee()
+        sb.c.close()
+        print("DataBase is closed")
+        projectList = get_project_list()
+        employeeLevelList = get_employeeLevel_list()
+        app.logger.info('%s updated profile details', corpid)
+        AdminReturn = Admin()
+        if AdminReturn == "Yes":
+            return render_template("Dashboard.html", rowTable=rowReturn, **locals())
+        else:
+            return render_template("Dashboard.html", rowTable=rowReturn, EmployeeName=EmployeeName, employee=employee,projectList=projectList, employeeLevelList = employeeLevelList)
+    return redirect(url_for('home'))
 
 
 
