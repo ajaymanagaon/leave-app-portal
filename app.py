@@ -24,7 +24,7 @@ app.secret_key = os.urandom(24)
 #Login and Logout Page
 @app.route('/')
 def home():
-   return render_template('loginv4.html')
+   return render_template('loginV4.html')
 
 @app.route('/signout', methods=['GET'])
 def signout():
@@ -65,7 +65,7 @@ def login():
                         else:
                             return render_template("Dashboard.html", rowTable=rowReturn, projectList=projectList)
             app.logger.error('Failed to login for %s',corpid)
-            return render_template("login.html", **locals())
+            return render_template("loginV4.html", **locals())
     except Exception as e:
         return str(e)
 
@@ -537,6 +537,10 @@ def saveattendance(attendanceDay):
                 sb.insert_into_leave_details_table_yesterday(attendanceDetails=attendanceDetails, leavetype= leaveId)
         sb.c.close()
         return "Ok"
+
+
+
+
 
 
 #All Private Methods
