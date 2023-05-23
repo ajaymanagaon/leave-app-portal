@@ -14,7 +14,7 @@ from shutil import copy
 from flask import Response
 from flask import session,g
 from logging.handlers import RotatingFileHandler
-
+import random
 
 
 
@@ -243,11 +243,63 @@ def applyLeave():
     return render_template('loginV4.html', **locals())
 
 
+#Adding All Lab Request API's
+
+@app.route('/labRequest')
+def labRequest():
+    if 'user' in session:
+        print("personalLeave")
+        corpid = session['user']
+        sb = EmployeeProfileDAL()
+        EmployeeName=(sb.get_current_employee_Info(corpid))[0][0]
+        EmployeeName = corpid
+        projectList = get_project_list()
+        sb = EmployeeProfileDAL()
+        rowTable = sb.read_lab_requests()
+        AdminReturn = Admin()
+        if AdminReturn == "Yes":
+          return render_template('Lab.html', **locals())
+        else:
+            return render_template('Lab.html', EmployeeName=EmployeeName,corpid=corpid, projectList=projectList, rowTable=rowTable)
+    return render_template('loginV4.html', **locals())
 
 
+@app.route('/add lab request', methods=['POST'])
+def add_lab_request():
+    if 'user' in session:
+        request_description = request.form['description']
+        project_name = request.form['ProjectName']
+        corpid = session['user']
+        sb = EmployeeProfileDAL()
+        today = date.today().strftime('%m/%d/%Y')
+        EmployeeName = (sb.get_current_employee_Info(corpid))[0][0]
+        projectList = get_project_list()
+        id = int(random.random() * 100000.0)
+        sb.add_lab_request(request_description,EmployeeName,project_name, today, id)
+        rowReturn = sb.read_lab_requests()
+        rowTable = sb.read_lab_requests()
+        AdminReturn = Admin()
+        if AdminReturn == "Yes":
+          return render_template('Lab.html', **locals())
+        else:
+            return render_template('Lab.html', EmployeeName=EmployeeName,corpid=corpid, projectList=projectList, rowTable=rowTable)
+    return render_template('loginV4.html', **locals())
 
 
-
+@app.route('/Delete Request', methods=['POST'])
+def delete_lab_request():
+    corpid = session['user']
+    sb = EmployeeProfileDAL()
+    EmployeeName = (sb.get_current_employee_Info(corpid))[0][0]
+    request_id = request.form['requestId']
+    sb.delete_lab_request(request_id)
+    rowTable = sb.read_lab_requests()
+    projectList = get_project_list()
+    AdminReturn = Admin()
+    if AdminReturn == "Yes":
+        return render_template('Lab.html', **locals())
+    else:
+        return render_template('Lab.html', EmployeeName=EmployeeName,corpid=corpid, projectList=projectList, rowTable=rowTable)
 
 
 
