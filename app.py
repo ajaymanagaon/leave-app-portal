@@ -543,6 +543,9 @@ def saveattendance(attendanceDay):
 def downloadattendancereport():
     current_directory = os.getcwd()
     path = os.path.join(current_directory, r'Attendance')
+    isExist = os.path.exists(path)
+    if not isExist:
+        os.makedirs(path)
     try:      
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)            
@@ -618,9 +621,6 @@ def downloadattendancereport():
         if attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] == 'None' and attendanceEmployeesYesterday['CasualLeaveEmployees'] != 'None':
             casualLeaveEmployeesYesterday = attendanceEmployeesYesterday['CasualLeaveEmployees']
 
-        isExist = os.path.exists(path)
-        if not isExist:
-            os.makedirs(path)
             
         todaysdate = datetime.now().strftime('%d-%m-%Y')
         workbook = xlsxwriter.Workbook(f'{path}\\Attendance_{todaysdate}.xlsx')
