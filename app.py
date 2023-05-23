@@ -30,33 +30,37 @@ def home():
 
 @app.route('/profile', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        sb = EmployeeProfileDAL()
-        rowReturn = sb.read_employee()
-        projectList=get_project_list()
-        return render_template("Dashboard.html", rowTable=rowReturn, projectList=projectList)
-    if request.method == 'POST':
-        corpid=request.form['corpId']
-        corppass = request.form['corppass']
-        sb = EmployeeProfileDAL()
-        EmployeeName = (sb.get_current_employee_Info(corpid))
-        rowReturn = sb.read_employee()
-        loginfailedmsg = "Invalid credentials"
-        projectList=get_project_list()
-        if corpid:
-            if request.method == 'POST':
-                session.pop('user', None)
-                if EmployeeName:
-                    session['user'] = request.form['corpId']
-                    app.logger.info('-------------------------------------------------------------------------------------')
-                    app.logger.info('Logged in by: %s', corpid)
-                    admin_return= Admin()
-                    if admin_return=="Yes":
-                        return redirect(url_for("viewTeamfun"))
-                    else:
-                        return render_template("Dashboard.html", rowTable=rowReturn, projectList=projectList)
-        app.logger.error('Failed to login for %s',corpid)
-        return render_template("loginV4.html", **locals())
+    try:
+        if request.method == 'GET':
+            sb = EmployeeProfileDAL()
+            rowReturn = sb.read_employee()
+            projectList=get_project_list()
+            return render_template("Dashboard.html", rowTable=rowReturn, projectList=projectList)
+        if request.method == 'POST':
+            corpid=request.form['corpId']
+            corppass = request.form['corppass']
+            sb = EmployeeProfileDAL()
+            EmployeeName = (sb.get_current_employee_Info(corpid))
+            print(f'EmployeeName : {EmployeeName}')
+            rowReturn = sb.read_employee()
+            loginfailedmsg = "Invalid credentials"
+            projectList=get_project_list()
+            if corpid:
+                if request.method == 'POST':
+                    session.pop('user', None)
+                    if EmployeeName:
+                        session['user'] = request.form['corpId']
+                        app.logger.info('-------------------------------------------------------------------------------------')
+                        app.logger.info('Logged in by: %s', corpid)
+                        admin_return= Admin()
+                        if admin_return=="Yes":
+                            return redirect(url_for("viewTeamfun"))
+                        else:
+                            return render_template("Dashboard.html", rowTable=rowReturn, projectList=projectList)
+            app.logger.error('Failed to login for %s',corpid)
+            return render_template("login.html", **locals())
+    except Exception as e:
+        return str(e)
 
 @app.route('/viewteam')
 def viewTeamfun():
