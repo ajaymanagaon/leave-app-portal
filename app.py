@@ -625,7 +625,7 @@ def downloadattendancereport():
 
             
         todaysdate = datetime.now().strftime('%d-%m-%Y')
-        workbook = xlsxwriter.Workbook(f'{path}\\Attendance_{todaysdate}.xlsx')
+        workbook = xlsxwriter.Workbook(f'{path}\\{todaysdate}.xlsx')
         worksheet = workbook.add_worksheet(todaysdate)
         #Excel Formatting
         bold = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter','border':2, 'border_color':'black'})
@@ -731,7 +731,7 @@ def downloadattendancereport():
         #worksheet.write('E5',','.join(attendanceEmployees['WorkFromHomeEmployees']),text_wrap)
 
         workbook.close()
-        file = f'{path}\\Attendance_{todaysdate}.xlsx'
+        file = f'{path}\\{todaysdate}.xlsx'
         return send_file(file,as_attachment= True)
     except Exception as e:
         print(f'Error when downloading report : {e}')
