@@ -626,7 +626,7 @@ def downloadattendancereport():
 
             
         todaysdate = datetime.now().strftime('%d-%m-%Y')
-        workbook = xlsxwriter.Workbook(f'{path}\\Attendance_{todaysdate}.xlsx')
+        workbook = xlsxwriter.Workbook(f'{path}\\_{todaysdate}.xlsx')
         worksheet = workbook.add_worksheet(todaysdate)
         #Excel Formatting
         bold = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter','border':2, 'border_color':'black'})
