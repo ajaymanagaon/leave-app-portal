@@ -541,7 +541,8 @@ def saveattendance(attendanceDay):
 
 @app.route('/downloadattendancereport', methods=['GET'])
 def downloadattendancereport():
-    path = "C:\\Attendance"
+    current_directory = os.getcwd()
+    path = os.path.join(current_directory, r'Attendance')
     try:      
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)            
