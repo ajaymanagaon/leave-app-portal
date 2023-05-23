@@ -540,13 +540,15 @@ def saveattendance(attendanceDay):
 
 @app.route('/downloadattendancereport', methods=['POST'])
 def downloadattendancereport():
-    print('Inside Report')
-    path = "C:\\Attendance"
-    try:      
-        isExist = os.path.exists(path)
+    current_directory = os.getcwd()
+    path = os.path.join(current_directory, r'Attendance')
+    isExist = os.path.exists(path)
+    try:
         if not isExist:
             os.makedirs(path)
-
+    except Exception as e:
+        return str(e)
+    try:      
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)            
             if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -620,9 +622,10 @@ def downloadattendancereport():
             sickLeaveEmployeesYesterday = attendanceEmployeesYesterday['SickLeaveEmployees']
         if attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] == 'None' and attendanceEmployeesYesterday['CasualLeaveEmployees'] != 'None':
             casualLeaveEmployeesYesterday = attendanceEmployeesYesterday['CasualLeaveEmployees']
+
             
         todaysdate = datetime.now().strftime('%d-%m-%Y')
-        workbook = xlsxwriter.Workbook(f'C:\\Attendance\\Attendance_{todaysdate}.xlsx')
+        workbook = xlsxwriter.Workbook(f'{path}\\Attendance_{todaysdate}.xlsx')
         worksheet = workbook.add_worksheet(todaysdate)
         #Excel Formatting
         bold = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter','border':2, 'border_color':'black'})
@@ -728,8 +731,7 @@ def downloadattendancereport():
         #worksheet.write('E5',','.join(attendanceEmployees['WorkFromHomeEmployees']),text_wrap)
 
         workbook.close()
-        
-        file = f'C:\\Attendance\\Attendance_{todaysdate}.xlsx'
+        file = f'{path}\\Attendance_{todaysdate}.xlsx'
         return send_file(file,as_attachment= True)
     except Exception as e:
         print(f'Error when downloading report : {e}')
@@ -999,4 +1001,4 @@ def getLeaveIdFromLeaveType(sickLeave, casualLeave):
 # Port Number Configuration
 
 if __name__ == '__main__':
-   app.run(host='0.0.0.0',port=8000)
+   app.run(host='0.0.0.0',port=80)
