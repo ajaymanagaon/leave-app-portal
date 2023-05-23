@@ -21,17 +21,9 @@ import random
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-#Login and Logout Page
 @app.route('/')
 def home():
    return render_template('loginv4.html')
-
-@app.route('/signout', methods=['GET'])
-def signout():
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    session.pop('user', None)
-    return redirect(url_for('home'))
 
 
 #Employee Details API's - Create, Update and Delete Employee
@@ -68,6 +60,7 @@ def login():
             return render_template("login.html", **locals())
     except Exception as e:
         return str(e)
+
 
 @app.route('/viewteam')
 def viewTeamfun():
