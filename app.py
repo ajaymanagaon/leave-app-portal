@@ -732,12 +732,11 @@ def downloadattendancereport():
         #worksheet.write('E5',','.join(attendanceEmployees['WorkFromHomeEmployees']),text_wrap)
 
         workbook.close()
-        
-        file = f'C:\\Attendance\\Attendance_{todaysdate}.xlsx'
+        file = f'{path}\\Attendance_{todaysdate}.xlsx'
         return send_file(file,as_attachment= True)
     except Exception as e:
         print(f'Error when downloading report : {e}')
-        return "error"
+        return str(e)
 
 
 
