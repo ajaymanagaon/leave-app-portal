@@ -176,6 +176,18 @@ def update_profile():
 
 
 
+@app.route('/deleteEmployee',methods=['GET'])
+def deleteemp():
+    if 'user' in session:
+        print(f"Delete Request Initiated for Employee Id : {request.args['employeeId']}")
+        employeeId = request.args['employeeId']
+        sb = EmployeeProfileDAL()
+        delete_status = sb.delete_employee(employeeId)
+        return delete_status
+
+
+
+
 
 
 #All Private Methods
