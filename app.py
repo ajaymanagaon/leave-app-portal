@@ -394,6 +394,50 @@ def currentMonthDetails():
 
 
 
+#Monthly Other Deductions API
+
+@app.route('/monthlyOtherDeductions')
+def monthlyOtherDeductions():
+    if 'user' in session:
+        corpid = session['user']
+        v = request.args.get('mon')
+        if v is not None:
+            v = v.split("-")
+            sb = EmployeeProfileDAL()
+            EmployeeName = (sb.get_current_employee_Info(corpid))[0][0]
+            d = importDateTime.date.today()
+            month = v[1]
+            year = v[0]
+            dateArray = []
+            dateArray = dateArrayMethod(int(year), int(month))
+            employeeStatusListView = []
+            employeeStatusListView = gettingOtherDeductionsInfo(month, int(year))
+            AdminReturn = Admin()
+            if AdminReturn == "Yes":
+                return render_template("OtherDeductions.html", **locals())
+            else:
+                return render_template("OtherDeductions.html", dateArray=dateArray,
+                                       employeeStatusListView=employeeStatusListView, EmployeeName=EmployeeName,
+                                       corpid=corpid)
+        else:
+            sb = EmployeeProfileDAL()
+            EmployeeName = (sb.get_current_employee_Info(corpid))[0][0]
+            d = importDateTime.date.today()
+            month = d.strftime('%m')
+            year = d.strftime('%Y')
+            dateArray = []
+            dateArray = dateArrayMethod(int(year), int(month))
+            employeeStatusListView = []
+            employeeStatusListView = gettingOtherDeductionsInfo(month, int(year))
+            AdminReturn = Admin()
+            if AdminReturn == "Yes":
+                return render_template("OtherDeductions.html", **locals())
+            else:
+                return render_template("OtherDeductions.html", dateArray=dateArray,
+                                       employeeStatusListView=employeeStatusListView, EmployeeName=EmployeeName,
+                                       corpid=corpid)
+    return render_template('loginV4.html', **locals())
+
 
 
 
@@ -521,6 +565,78 @@ def gettingInfo(month,year):
     return employeeStatusListView
 
 
+
+def gettingOtherDeductionsInfo(month, year):
+    numOfDays = calendar.monthrange(year, int(month))
+
+    startDate =  "1-" + str(month) +"-" + str(year)
+    endDate = str(numOfDays[1]) + "-" + str(month) +"-" + str(year)
+
+    otherDeductions = []
+    for value in ReadJson()['OtherDeductions']:
+        otherDeductions.append(value['PaymentRecovery'])
+        otherDeductions.append(value['Amount'])
+        otherDeductions.append(value['PaymentRecoveryTowards'])
+        otherDeductions.append(value['LetterToBeIssued'])
+        otherDeductions.append(value['ApprovalAttached'])
+        otherDeductions.append(value['NameOftheAttachment'])
+        otherDeductions.append(value['ApproverName'])
+        otherDeductions.append(value['RemarksReason'])
+        otherDeductions.append(value['TypeOfDeduction'])
+        otherDeductions.append(value['MinimumWorkDays'])
+
+
+    numOfDaysCfCurrentMonth = numOfDays[1]
+    sb = EmployeeProfileDAL()
+    
+    employee_list = sb.read_employee()
+    employeeStatusListView = []
+    for employee in employee_list:
+        employeeWorkStatus = []
+        counterForOn = 0
+        dateArray = dateArrayMethod(year, int(month))
+        for i in range(numOfDaysCfCurrentMonth):
+            if dateArray[i][-3:] == 'Sat' or dateArray[i][-3:] == 'Sun':
+                test = " "
+            else:
+                counterForOn += 1
+
+        employee_leave_list = sb.read_leaves_type(employee[7], month, year)
+        if employee_leave_list is not None:
+            counterForFullDay = 0
+            counterForHalfDay = 0
+            for leave in employee_leave_list:
+                numOfDays = calendar.monthrange(year, int(month))
+                numOfDaysCfCurrentMonth = numOfDays[1]
+                leave_date = str(leave[0])
+                leave_type = leave[1]
+                leavedate = leave_date.split('/')
+                if leave_type == '1':
+                    counterForFullDay += 1  #full day leave
+                else:
+                    counterForHalfDay += 1 #half day leave
+        totalDayOfFullDays = counterForFullDay
+        totalDayOfHalfDays = counterForHalfDay
+        totalhoursofWork = 0
+        totalhoursofWork = (counterForOn * 8 - (counterForFullDay * 8 + counterForHalfDay * 4))
+        if(totalhoursofWork < (int(otherDeductions[9]) * 8)):   #if work days is less than 7 days
+            print("inside continue")
+            continue
+        else:
+            employeeWorkStatus.append(str(employee[1]))
+            employeeWorkStatus.append(otherDeductions[0])
+            employeeWorkStatus.append(employee[2])
+            employeeWorkStatus.append(otherDeductions[1])
+            employeeWorkStatus.append(startDate)
+            employeeWorkStatus.append(endDate)
+            employeeWorkStatus.append(otherDeductions[2])
+            employeeWorkStatus.append(otherDeductions[3])
+            employeeWorkStatus.append(otherDeductions[4])
+            employeeWorkStatus.append(otherDeductions[5])
+            employeeWorkStatus.append(otherDeductions[6])
+            employeeWorkStatus.append(otherDeductions[7])
+            employeeStatusListView.append(employeeWorkStatus)
+    return employeeStatusListView
 
 
 
