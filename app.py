@@ -544,8 +544,11 @@ def downloadattendancereport():
     current_directory = os.getcwd()
     path = os.path.join(current_directory, r'Attendance')
     isExist = os.path.exists(path)
-    if not isExist:
-        os.makedirs(path)
+    try:
+        if not isExist:
+            os.makedirs(path)
+    except Exception as e:
+        return str(e)
     try:      
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)            
