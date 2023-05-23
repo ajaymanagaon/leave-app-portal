@@ -11,9 +11,9 @@
 <div class = "container">
     <div>
         <h1>Attendance</h1>    
-        <a class="nav-link" style = "margin-left: 950px; margin-top: -10px;" id = "downloadreport" href="/downloadattendancereport">
-            <button>Export to Excel</button>
-        </a>
+        <form class="nav-link" style = "margin-left: 950px; margin-top: -10px;" method="POST" action='/downloadattendancereport'>
+            <button type="submit">Export to Excel</button>
+        </form>
         <div id = "attendanceByDay" style = "margin-left: 10px;margin-top: -30px; margin-bottom: 20px;">
             <label style = "font-weight: bold;">Attendance By Day : </label>
             <select id="attendanceByDayDropdownSelect"> 
@@ -477,30 +477,6 @@
             $('#atOfficeNo').prop('checked', true);
         }
     });
-
-    //Downloading the attendace sheet in the form of excel
-    $('#downloadAttendance').click(function(){
-        urlFinal = 'downloadattendancereport'
-        $.ajax({
-            url: '/' + urlFinal,
-            type: 'GET',
-            success: function (response) {
-                if(response == "Ok"){
-                    $('#excelAttendanceModal').modal({
-                        show : true
-                    })
-                }
-                if(response == "error"){
-                    toastr.error("Error while downloading file. If the file is open, please close it and then try", { fadeAway: 4000 })
-                }
-            },
-            error: function (jqXHR, error) {
-                console.log(error)
-            },
-            complete: function () {
-            }
-        })
-    })
     
 
 </script>

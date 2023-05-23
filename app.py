@@ -525,7 +525,6 @@ def saveattendance(attendanceDay):
         casualLeave = request.form['casualLeave']
         workFromHome = request.form['workFromHome']
         leaveId = getLeaveIdFromLeaveType(sickLeave=sickLeave, casualLeave=casualLeave)
-        print(f'Leave id : {leaveId}')
         attendanceDetails = AttendanceDetails(employee_id= employeeId, at_office=atOffice,sick_leave=sickLeave,casual_leave=casualLeave,work_form_home=workFromHome)
         if attendanceDay == 'today':
             sb.update_employee_attendance(attendanceDetails=attendanceDetails)
@@ -539,17 +538,15 @@ def saveattendance(attendanceDay):
         return "Ok"
 
 
-@app.route('/downloadattendancereport', methods=['GET'])
+@app.route('/downloadattendancereport', methods=['POST'])
 def downloadattendancereport():
-    current_directory = os.getcwd()
-    path = os.path.join(current_directory, r'Attendance')
-    isExist = os.path.exists(path)
-    try:
+    print('Inside Report')
+    path = "C:\\Attendance"
+    try:      
+        isExist = os.path.exists(path)
         if not isExist:
             os.makedirs(path)
-    except Exception as e:
-        return str(e)
-    try:      
+
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)            
             if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -623,10 +620,9 @@ def downloadattendancereport():
             sickLeaveEmployeesYesterday = attendanceEmployeesYesterday['SickLeaveEmployees']
         if attendanceEmployeesHalfDayYesterday['CasualLeaveEmployeeshalfday'] == 'None' and attendanceEmployeesYesterday['CasualLeaveEmployees'] != 'None':
             casualLeaveEmployeesYesterday = attendanceEmployeesYesterday['CasualLeaveEmployees']
-
             
         todaysdate = datetime.now().strftime('%d-%m-%Y')
-        workbook = xlsxwriter.Workbook(f'{path}\\_{todaysdate}.xlsx')
+        workbook = xlsxwriter.Workbook(f'C:\\Attendance\\Attendance_{todaysdate}.xlsx')
         worksheet = workbook.add_worksheet(todaysdate)
         #Excel Formatting
         bold = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter','border':2, 'border_color':'black'})
@@ -732,16 +728,12 @@ def downloadattendancereport():
         #worksheet.write('E5',','.join(attendanceEmployees['WorkFromHomeEmployees']),text_wrap)
 
         workbook.close()
-        file = f'{path}\\_{todaysdate}.xlsx'
+        
+        file = f'C:\\Attendance\\Attendance_{todaysdate}.xlsx'
         return send_file(file,as_attachment= True)
     except Exception as e:
         print(f'Error when downloading report : {e}')
         return str(e)
-
-
-
-
-
 
 
 
@@ -1007,4 +999,4 @@ def getLeaveIdFromLeaveType(sickLeave, casualLeave):
 # Port Number Configuration
 
 if __name__ == '__main__':
-   app.run(host='0.0.0.0',port=80)
+   app.run(host='0.0.0.0',port=8000)
