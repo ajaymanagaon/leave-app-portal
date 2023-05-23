@@ -549,7 +549,7 @@ def downloadattendancereport():
             if os.path.isfile(file_path) or os.path.islink(file_path):
                 os.remove(file_path)                
     except Exception as e:
-        return 'The file might be open hence failed to delete a file, Please close the file and try!'
+        return str(path)
     try:
         sb = EmployeeProfileDAL()
         #Get the count of all employees for Half Day and Full Day
@@ -623,7 +623,7 @@ def downloadattendancereport():
             os.makedirs(path)
             
         todaysdate = datetime.now().strftime('%d-%m-%Y')
-        workbook = xlsxwriter.Workbook(f'C:\\Attendance\\Attendance_{todaysdate}.xlsx')
+        workbook = xlsxwriter.Workbook(f'{path}\\Attendance_{todaysdate}.xlsx')
         worksheet = workbook.add_worksheet(todaysdate)
         #Excel Formatting
         bold = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter','border':2, 'border_color':'black'})
