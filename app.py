@@ -186,6 +186,69 @@ def deleteemp():
         return delete_status
 
 
+#Apply Leave API's
+@app.route('/personalLeave')
+def personalLeave():
+    if 'user' in session:
+        print("personalLeave")
+        corpid = session['user']
+        # corpid="conddas"
+        sb = EmployeeProfileDAL()
+        EmployeeName=(sb.get_current_employee_Info(corpid))[0][0]
+        EmployeeName = corpid
+        AdminReturn = Admin()
+        if AdminReturn == "Yes":
+          return render_template('personalCal.html', **locals())
+        else:
+            return render_template('personalCal.html', EmployeeName=EmployeeName,corpid=corpid)
+    return render_template('loginV4.html', **locals())
+
+@app.route('/dj',methods=["GET"])
+def jsondata():
+    with open("static/json/pi.json",'r', encoding='utf-8-sig') as json_file:
+        json_data = json.load(json_file)
+        sb=EmployeeProfileDAL()
+        print("-----------------------------------")
+        print("-----------------------------------")
+    return jsonify(json_data)
+
+@app.route('/getCurrentUser', methods=["GET"])
+def getCurrentUser():
+    if 'user' in session:
+        corpid=session['user']
+        return jsonify(corpid)
+    return jsonify("false")
+
+@app.route('/showPersonalLeave',methods=["POST","GET"])
+def showPersonalLeave():
+    sb = EmployeeProfileDAL()
+    corp_id_org=request.args.get('corpid')
+    if corp_id_org is not None:
+        rowsForManagerEmployee = sb.readTotalLeavesForAnEmployee(corp_id_org)
+        return jsonify(rowsForManagerEmployee)
+    return render_template('loginV4.html', **locals())
+
+@app.route('/applyLeave' ,methods=["POST", "GET"])
+def applyLeave():
+    if 'user' in session:
+        print("applyLeave")
+        date = request.form['Date']
+        leaveType=request.form['LeaveType']
+        corpid=request.form['CorpID']
+        sb = EmployeeProfileDAL()
+        sb.submit_leaves(date, corpid,leaveType)
+        EmployeeName = (sb.get_current_employee_Info(corpid))[0][0]
+        app.logger.info('Leave applied for %s on %s by: %s', corpid, date, corpid)
+        return jsonify(success='true')
+    return render_template('loginV4.html', **locals())
+
+
+
+
+
+
+
+
 
 
 
